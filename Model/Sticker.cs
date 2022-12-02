@@ -2,12 +2,13 @@
 {
     public class Sticker
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
+        public string StickerId { get; set; }
         public string ReferenceString { get; set; }
 
         public Sticker(string stickerId, string referenceString)
         {
-            Id = stickerId;
+            StickerId = stickerId;
             ReferenceString = referenceString;
         }
     }

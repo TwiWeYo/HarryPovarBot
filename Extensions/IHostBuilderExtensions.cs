@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace HarryPovarBot.Extensions
 {
@@ -12,9 +13,10 @@ namespace HarryPovarBot.Extensions
         public static IHostBuilder ConfigureHost(this IHostBuilder builder)
         {
             return builder
-            .ConfigureAppConfiguration(builder =>
+            .ConfigureAppConfiguration((context, builder) =>
             {
-                builder.AddJsonFile("appsettings.json");
+                builder.SetBasePath(AppContext.BaseDirectory)
+                    .AddJsonFile("appsettings.json", optional: false);
             })
             .ConfigureLogging((context, logging) =>
             {
@@ -25,11 +27,14 @@ namespace HarryPovarBot.Extensions
             .ConfigureServices((context, services) =>
             {
                 services
-                    .Configure<AppSettings>(context.Configuration)
+                    .Configure<AppSettings>(context.Configuration.GetSection("AppSettings"))
 
                     .AddSingleton<StickerBot>()
                     .AddSingleton<IRepository<BsonValue, Sticker>>(
-                        new LiteDbRepository<Sticker>(context.Configuration.GetSection("ConnectionString").Value!));
+                        new LiteDbRepository<Sticker>(context.Configuration
+                        .GetSection("AppSettings")
+                        !.Get<AppSettings>()
+                        !.ConnectionString));
 
             });
         }

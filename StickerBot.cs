@@ -1,6 +1,8 @@
-﻿using HarryPovarBot.Repository;
+﻿using HarryPovarBot.Extensions;
+using HarryPovarBot.Repository;
 using LiteDB;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Threading;
@@ -19,10 +21,16 @@ namespace HarryPovarBot
         private readonly ITelegramBotClient botClient;
         private readonly IRepository<BsonValue, Sticker> repository;
 
-        public StickerBot(IRepository<BsonValue, Sticker> repository, ILogger<StickerBot> logger)
+        public StickerBot(IRepository<BsonValue, Sticker> repository, ILogger<StickerBot> logger, IOptions<AppSettings> options)
         {
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            botClient = new TelegramBotClient(options.Value.Token);
+
             this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            botClient = new TelegramBotClient("");
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
         public async Task Run()
@@ -64,9 +72,9 @@ namespace HarryPovarBot
                 x => messageText.Contains(x.ReferenceString!, StringComparison.InvariantCultureIgnoreCase))
                 .FirstOrDefault();
 
-            if (result?.Id is not null)
+            if (result?.StickerId is not null)
             {
-                await botClient.SendStickerAsync(chatId, result.Id, cancellationToken: cancellationToken);
+                await botClient.SendStickerAsync(chatId, result.StickerId, cancellationToken: cancellationToken);
             }
         }
 
