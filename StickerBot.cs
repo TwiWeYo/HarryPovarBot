@@ -1,5 +1,6 @@
 ﻿using HarryPovarBot.Repository;
 using LiteDB;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,17 +16,15 @@ namespace HarryPovarBot
 {
     public class StickerBot
     {
+        private readonly ILogger<StickerBot> logger;
         private readonly ITelegramBotClient botClient;
         private readonly IRepository<BsonValue, Sticker> repository;
-        public StickerBot(IRepository<BsonValue, Sticker> repository)
-        {
-            if (repository is null)
-            {
-                throw new ArgumentNullException(nameof(repository));
-            }
 
-            this.repository = repository;
+        public StickerBot(IRepository<BsonValue, Sticker> repository, ILogger<StickerBot> logger)
+        {
+            this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
             botClient = new TelegramBotClient("");
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
         public async Task Run()
         {
@@ -46,7 +45,7 @@ namespace HarryPovarBot
 
             var me = await botClient.GetMeAsync();
 
-            Console.WriteLine($"Start listening for @{me.Username}");
+            logger.LogInformation($"Start listening for @{me.Username}");
             Console.ReadLine();
 
             // Send cancellation request to stop bot
@@ -81,7 +80,7 @@ namespace HarryPovarBot
                 _ => exception.ToString()
             };
 
-            Console.WriteLine(ErrorMessage);
+            logger.LogError(ErrorMessage);
             return Task.CompletedTask;
         }
     }
