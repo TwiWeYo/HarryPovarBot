@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HarryPovarBot.Repository;
+using LiteDB;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,13 +15,18 @@ namespace HarryPovarBot
     public class StickerBot
     {
         private readonly ITelegramBotClient botClient;
-        private readonly StickerRepository repository;
+        private readonly IRepository<BsonValue, Sticker> repository;
         private StickerQuery? pendingSticker;
         private long? editId;
-        public StickerBot()
+        public StickerBot(IRepository<BsonValue, Sticker> repository)
         {
+            if (repository is null)
+            {
+                throw new ArgumentNullException(nameof(repository));
+            }
+
+            this.repository = repository;
             botClient = new TelegramBotClient("");
-            repository = new StickerRepository();
         }
         public async Task Run()
         {
