@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace HarryPovarBot
+﻿namespace HarryPovarBot
 {
     public class Sticker
     {
